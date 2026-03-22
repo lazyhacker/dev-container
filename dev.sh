@@ -100,6 +100,6 @@ fi
 
 # --- Tmux Entry ---
 podman exec -it -u "${USER}" "${CONTAINER_NAME}" /bin/bash -c "
-    tmux has-session -t dev 2>/dev/null || tmux new-session -d -s dev
-    tmux attach-session -t dev
+    tmux has-session -t dev 2>/dev/null || tmux -u new-session -d -s dev
+    tmux -u attach-session -t dev
 "
