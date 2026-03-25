@@ -4,8 +4,9 @@
 # Sanitize directory name for a valid container name
 DIR_NAME=$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]-')
 CONTAINER_NAME="dev-${DIR_NAME}"
-IMAGE_NAME="fedora-go-dev"
-USE_CACHE=false 
+IMAGE_NAME="fedora-dev"
+CONTAINERFILE=""
+USE_CACHE=false
 
 # --- Functions ---
 
@@ -18,11 +19,12 @@ check_dependencies() {
 
 show_help() {
     echo "Usage: $(basename "$0") [OPTION]"
-    echo "  -r, --rebuild   Wipe project container and rebuild shared image."
-    echo "  -s, --stop      Stop THIS project's container."
-    echo "  -w, --wipe      Tear down THIS project's container."
-    echo "  -l, --list      List all active dev environments."
-    echo "  -c, --cache     Use project-specific persistent go-cache."
+    echo "  -r, --rebuild        Wipe project container and rebuild shared image."
+    echo "  -f, --file <path>    Use an alternative Containerfile for the build."
+    echo "  -s, --stop           Stop THIS project's container."
+    echo "  -w, --wipe           Tear down THIS project's container."
+    echo "  -l, --list           List all active dev environments."
+    echo "  -c, --cache          Use project-specific persistent go-cache."
     exit 0
 }
 
@@ -34,17 +36,16 @@ list_envs() {
 
 rebuild_all() {
     echo "--- Initiating Global Rebuild ---"
-    # Force remove current container so it doesn't pin old image layers
     podman rm -f "${CONTAINER_NAME}" 2>/dev/null
-    
+
     podman build \
+        --squash \
         --build-arg USER_NAME="${USER}" \
         --build-arg USER_UID="$(id -u)" \
         --build-arg USER_GID="$(id -g)" \
         --build-arg CACHEBUST=$(date +%s) \
         -t "${IMAGE_NAME}" .
-    
-    # Clean up the <none> ghosts
+
     podman image prune -f
     echo "--- Rebuild Complete ---"
 }
@@ -55,6 +56,7 @@ check_dependencies
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
         -r|--rebuild) REBUILD=true ;;
+        -f|--file)    shift; CONTAINERFILE="$1" ;;
         -s|--stop)    podman stop "${CONTAINER_NAME}" 2>/dev/null; exit 0 ;;
         -w|--wipe)    podman rm -f "${CONTAINER_NAME}" 2>/dev/null; podman image prune -f; exit 0 ;;
         -l|--list)    list_envs ;;
