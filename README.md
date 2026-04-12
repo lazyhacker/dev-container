@@ -49,7 +49,7 @@ Getting Started
 
 `./dev.sh --rebuild`
 
-The script will build the container image, prompt you for a host port to map to (defaults to 8080), and drop you into a tmux session.
+The script will build the container image, prompt you for a host port to map to (defaults to 9001), and drop you into a tmux session.
 
 Development Workflow
 --------------------

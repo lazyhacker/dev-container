@@ -1,0 +1,39 @@
+FROM fedora:latest
+
+ARG USER_NAME=developer
+ARG USER_UID=1000
+ARG USER_GID=1000
+ARG CACHEBUST=1
+
+# Consolidated Layer for minimal footprint
+RUN dnf -y update && dnf -y install \
+    curl tar gzip git make tmux vim-enhanced jq nodejs npm && \
+    dnf clean all && \
+    # Install Claude Code
+    npm install -g @google/gemini-cli && \
+    # FIXED: Group/User logic for low UIDs (like 503)
+    # Check if GID exists; if not, create it. Use -f to ignore if it exists.
+    groupadd -g $USER_GID $USER_NAME || echo "Group already exists" && \
+    # Check if UID exists; if not, create it. Use -o to allow non-unique UIDs if necessary.
+    useradd -u $USER_UID -g $USER_GID -m -l $USER_NAME || echo "User already exists" && \
+    # Ensure the home directory and project folder are ready
+    mkdir -p /home/$USER_NAME/project && \
+    chown -R $USER_UID:$USER_GID /home/$USER_NAME
+
+USER $USER_NAME
+WORKDIR /home/$USER_NAME
+
+# Separate layer for dotfiles to utilize caching if system deps don't change
+RUN git clone https://github.com/lazyhacker/dotfiles.git /home/$USER_NAME/dotfiles && \
+    cd /home/$USER_NAME/dotfiles && \
+    if [ -f ./install.sh ]; then \
+        chmod +x ./install.sh && ./install.sh; \
+    fi && \
+    mkdir -p /home/$USER_NAME/.vim/bundle && \
+    git clone https://github.com/VundleVim/Vundle.vim.git /home/$USER_NAME/.vim/bundle/Vundle.vim && \
+    vim -u /home/${USER_NAME}/.vimrc -T dumb -n -i NONE -es \
+    -c "silent! PluginInstall" \
+    -c "qall" || true
+
+WORKDIR /home/$USER_NAME/project
+CMD ["sleep", "infinity"]

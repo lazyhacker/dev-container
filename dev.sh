@@ -82,10 +82,10 @@ if [ -n "$(podman ps -aq -f name=${CONTAINER_NAME})" ]; then
 else
     # New Project Setup
     echo "Setting up new environment for: ${DIR_NAME}"
-    
-    echo -n "Host port to map to 8080 [Default 8080]: "
+
+    echo -n "Host port to map to [Default 9001]: "
     read -r PORT_IN
-    HOST_PORT="${PORT_IN:-8080}"
+    HOST_PORT="${PORT_IN:-9001}"
 
     CACHE_MAPPING=""
     if [ "$USE_CACHE" = true ]; then
@@ -96,7 +96,7 @@ else
         --name "${CONTAINER_NAME}" \
         -v "$(pwd):/home/${USER}/project:Z" \
         ${CACHE_MAPPING} \
-        -p "${HOST_PORT}:8080" \
+        -p "${HOST_PORT}:9001" \
         "${IMAGE_NAME}" sleep infinity
 fi
 
