@@ -1,7 +1,16 @@
 Containerized Local Dev Environment
 ===================================
 
-This repository provides an automated, containerized development environment based on Fedora and Go. It uses Podman to create isolated, reproducible workspaces that include your personal dotfiles, Vim configuration (with Vundle), and Go toolchains.
+This is my bash script to create a container with my development tools for
+my projects.  It assumes the source for the project is the directory that this
+script is executed so it will mount it to the container, put me inside the
+container's tmux session.  `dev.sh` will manage the lifecycle of the
+project containers. It handles building the image, starting/stopping containers,
+and automatically attaching you to a tmux session.
+
+This allows me to not pollute my host system with different tools and also
+isolate the tools in the container to only be able to access the source
+directory.
 
 Overview
 --------
@@ -12,14 +21,17 @@ The container sets up the following:
 
 -	Base OS: Uses the latest Fedora image.
 -	Tooling: Installs git, tmux, vim-enhanced, gcc, and jq.
--	Go Language: Installs Go version 1.26.1.
 -	Personalization: Pulls the lazyhacker dotfiles and sets them up automatically.
 -	Vim Setup: Configures Vundle and runs a headless PluginInstall so Vim is ready with all plugins on first launch.
 -	User Mapping: Dynamically creates a user inside the container that matches your host's UID and GID to prevent permission issues with mounted files.
 
-### dev.sh
+Containerfile-go
 
-A wrapper script to manage the lifecycle of your project containers. It handles building the image, starting/stopping containers, and automatically attaching you to a tmux session.
+-	Go Language: Installs Go version 1.26.1.
+
+Containerfile-claude
+
+- Claude Code and its dependencies.
 
 Getting Started
 ---------------
@@ -37,7 +49,7 @@ Getting Started
 
 `./dev.sh --rebuild`
 
-The script will build the fedora-go-dev image, prompt you for a host port to map to 8080 (defaults to 8080), and drop you into a tmux session.
+The script will build the container image, prompt you for a host port to map to (defaults to 8080), and drop you into a tmux session.
 
 Development Workflow
 --------------------
