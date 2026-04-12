@@ -80,14 +80,42 @@ check_dependencies
 
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
-        -r|--rebuild) REBUILD=true ;;
-        -f|--file)    shift; CONTAINERFILE="$1" ;;
-        -s|--stop)    podman stop "${CONTAINER_NAME}" 2>/dev/null; exit 0 ;;
-        -w|--wipe)    podman rm -f "${CONTAINER_NAME}" 2>/dev/null; podman image prune -f; exit 0 ;;
-        -l|--list)    list_envs ;;
-        -c|--cache)   USE_CACHE=true ;;
-        -h|--help)    show_help ;;
-        *) echo "Unknown option: $1"; show_help ;;
+        -r|--rebuild) 
+            REBUILD=true 
+            ;;
+        -f|--file)    
+            shift
+            if [[ -n "$1" && "$1" != -* ]]; then
+                CONTAINERFILE="$1"
+            else
+                echo "Error: --file requires a path argument."
+                exit 1
+            fi
+            ;;
+        -s|--stop)    
+            podman stop "${CONTAINER_NAME}" 2>/dev/null
+            exit 0 
+            ;;
+        -w|--wipe)    
+            echo "Wiping container and image for ${DIR_NAME}..."
+            podman rm -f "${CONTAINER_NAME}" 2>/dev/null
+            podman rmi "${IMAGE_NAME}" 2>/dev/null
+            podman image prune -f
+            exit 0 
+            ;;
+        -l|--list)    
+            list_envs 
+            ;;
+        -c|--cache)   
+            USE_CACHE=true 
+            ;;
+        -h|--help)    
+            show_help 
+            ;;
+        *) 
+            echo "Unknown option: $1"
+            show_help 
+            ;;
     esac
     shift
 done
