@@ -1,7 +1,7 @@
 FROM fedora:latest
 
 # Build arguments for flexibility
-ARG GO_VERSION=1.26.1
+ARG GO_VERSION=1.26.2
 ARG USER_NAME=developer
 ARG USER_UID=1000
 ARG USER_GID=1000
