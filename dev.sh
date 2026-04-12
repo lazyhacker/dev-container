@@ -4,7 +4,9 @@
 # Sanitize directory name for a valid container name
 DIR_NAME=$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]-')
 CONTAINER_NAME="dev-${DIR_NAME}"
-IMAGE_NAME="fedora-dev"
+
+# Make the image name specific to this directory
+IMAGE_NAME="fedora-dev-${DIR_NAME}"
 CONTAINERFILE=""
 USE_CACHE=false
 
@@ -35,10 +37,13 @@ list_envs() {
 }
 
 rebuild_all() {
-    echo "--- Initiating Global Rebuild ---"
+    echo "--- Initiating Rebuild for: ${IMAGE_NAME} ---"
+    
+    # 1. Stop and remove the existing container to unlock the image
     podman rm -f "${CONTAINER_NAME}" 2>/dev/null
 
-    # Create an array for the build command
+    # 2. Prepare the build arguments array
+    # This prevents shell quoting issues and makes adding optional flags cleaner
     BUILD_ARGS=(
         "--squash"
         "--build-arg" "USER_NAME=${USER}"
@@ -48,16 +53,26 @@ rebuild_all() {
         "-t" "${IMAGE_NAME}"
     )
 
-    # If -f was provided, add it to the arguments
+    # 3. Check if a specific Containerfile was provided via the -f flag
     if [ -n "$CONTAINERFILE" ]; then
-        BUILD_ARGS+=("-f" "$CONTAINERFILE")
+        if [ -f "$CONTAINERFILE" ]; then
+            BUILD_ARGS+=("-f" "$CONTAINERFILE")
+            echo "Using custom Containerfile: $CONTAINERFILE"
+        else
+            echo "Error: Containerfile '$CONTAINERFILE' not found."
+            exit 1
+        fi
     fi
 
-    # Run the build using the array and the context (the dot)
+    # 4. Execute the build
+    # We pass the BUILD_ARGS array and set the context to the current directory (.)
     podman build "${BUILD_ARGS[@]}" .
 
+    # 5. Cleanup
+    # Prunes only dangling images to keep your storage tidy
     podman image prune -f
-    echo "--- Rebuild Complete ---"
+    
+    echo "--- Rebuild of ${IMAGE_NAME} Complete ---"
 }
 
 # --- Parsing ---
