@@ -94,6 +94,7 @@ else
 
     podman run -d \
         --name "${CONTAINER_NAME}" \
+        --userns=keep-id \
         -v "$(pwd):/home/${USER}/project:Z" \
         ${CACHE_MAPPING} \
         -p "${HOST_PORT}:9001" \
