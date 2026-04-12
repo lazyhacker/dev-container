@@ -38,13 +38,23 @@ rebuild_all() {
     echo "--- Initiating Global Rebuild ---"
     podman rm -f "${CONTAINER_NAME}" 2>/dev/null
 
-    podman build \
-        --squash \
-        --build-arg USER_NAME="${USER}" \
-        --build-arg USER_UID="$(id -u)" \
-        --build-arg USER_GID="$(id -g)" \
-        --build-arg CACHEBUST=$(date +%s) \
-        -t "${IMAGE_NAME}" .
+    # Create an array for the build command
+    BUILD_ARGS=(
+        "--squash"
+        "--build-arg" "USER_NAME=${USER}"
+        "--build-arg" "USER_UID=$(id -u)"
+        "--build-arg" "USER_GID=$(id -g)"
+        "--build-arg" "CACHEBUST=$(date +%s)"
+        "-t" "${IMAGE_NAME}"
+    )
+
+    # If -f was provided, add it to the arguments
+    if [ -n "$CONTAINERFILE" ]; then
+        BUILD_ARGS+=("-f" "$CONTAINERFILE")
+    fi
+
+    # Run the build using the array and the context (the dot)
+    podman build "${BUILD_ARGS[@]}" .
 
     podman image prune -f
     echo "--- Rebuild Complete ---"
