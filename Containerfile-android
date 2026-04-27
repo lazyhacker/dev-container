@@ -9,8 +9,8 @@ ARG CACHEBUST=1
 RUN dnf -y update && dnf -y install \
     curl tar gzip git make tmux vim-enhanced jq nodejs npm && \
     dnf clean all && \
-    # Install Gemini CLI
-    npm install -g @google/gemini-cli && \
+    # Install Android CLI
+    curl -fsSL https://dl.google.com/android/cli/latest/linux_x86_64/install.sh | bash && \
     # FIXED: Group/User logic for low UIDs (like 503)
     # Check if GID exists; if not, create it. Use -f to ignore if it exists.
     groupadd -g $USER_GID $USER_NAME || echo "Group already exists" && \
