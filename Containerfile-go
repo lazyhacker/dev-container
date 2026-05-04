@@ -17,13 +17,13 @@ RUN dnf -y update && dnf -y install \
     curl -OL https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
     tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
     rm go${GO_VERSION}.linux-amd64.tar.gz && \
-    # Group/User logic: use || echo to handle existing IDs gracefully 
+    # Group/User logic: use || echo to handle existing IDs gracefully
     groupadd -g $USER_GID $USER_NAME || echo "Group already exists" && \
     useradd -u $USER_UID -g $USER_GID -m -l $USER_NAME || echo "User already exists" && \
     mkdir -p /home/$USER_NAME/project && \
     chown -R $USER_UID:$USER_GID /home/$USER_NAME
 
-# Set Environment Variables [cite: 9]
+# Set Environment Variables
 ENV GOROOT=/usr/local/go
 ENV GOPATH=/home/${USER_NAME}/go
 ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
@@ -37,7 +37,7 @@ RUN git clone https://github.com/lazyhacker/dotfiles.git /home/$USER_NAME/dotfil
     if [ -f ./install.sh ]; then \
         chmod +x ./install.sh && ./install.sh; \
     fi && \
-    # Setup Vim and Vundle in one go [cite: 14, 15]
+    # Setup Vim and Vundle in one go
     mkdir -p /home/$USER_NAME/.vim/bundle && \
     git clone https://github.com/VundleVim/Vundle.vim.git /home/$USER_NAME/.vim/bundle/Vundle.vim && \
     vim -u /home/${USER_NAME}/.vimrc -T dumb -n -i NONE -es \
