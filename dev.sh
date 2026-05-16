@@ -155,4 +155,4 @@ else
 fi
 
 # --- Tmux Entry ---
-podman exec -it -u "${USER}" "${CONTAINER_NAME}" 
+podman exec -it -u "${USER}" "${CONTAINER_NAME}" bash
