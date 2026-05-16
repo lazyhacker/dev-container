@@ -15,7 +15,9 @@ RUN dnf -y update && dnf -y install \
     # Check if GID exists; if not, create it. Use -f to ignore if it exists.
     groupadd -g $USER_GID $USER_NAME || echo "Group already exists" && \
     # Check if UID exists; if not, create it. Use -o to allow non-unique UIDs if necessary.
-    useradd -u $USER_UID -g $USER_GID -m -l $USER_NAME || echo "User already exists" && \
+    useradd -u $USER_UID -g $USER_GID -G wheel -m -l $USER_NAME || echo "User already exists" && \
+    # Allow the wheel group to use sudo without a password
+    echo '%wheel ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
     # Ensure the home directory and project folder are ready
     mkdir -p /home/$USER_NAME/project && \
     chown -R $USER_UID:$USER_GID /home/$USER_NAME
