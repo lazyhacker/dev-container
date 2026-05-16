@@ -37,6 +37,19 @@ list_envs() {
 }
 
 rebuild_all() {
+    # 0. Pre-flight check: Ensure a Containerfile exists before destroying the environment
+    if [ -n "$CONTAINERFILE" ]; then
+        if [ ! -f "$CONTAINERFILE" ]; then
+            echo "Error: Containerfile '$CONTAINERFILE' not found."
+            exit 1
+        fi
+    else
+        if [ ! -f "Containerfile" ]; then
+            echo "Error: No Containerfile found in the current directory. Please create one or specify a path using -f."
+            exit 1
+        fi
+    fi
+
     echo "--- Initiating Rebuild for: ${IMAGE_NAME} ---"
     
     # 1. Stop and remove the existing container to unlock the image
@@ -53,15 +66,10 @@ rebuild_all() {
         "-t" "${IMAGE_NAME}"
     )
 
-    # 3. Check if a specific Containerfile was provided via the -f flag
+    # 3. Add custom Containerfile to build args if specified
     if [ -n "$CONTAINERFILE" ]; then
-        if [ -f "$CONTAINERFILE" ]; then
-            BUILD_ARGS+=("-f" "$CONTAINERFILE")
-            echo "Using custom Containerfile: $CONTAINERFILE"
-        else
-            echo "Error: Containerfile '$CONTAINERFILE' not found."
-            exit 1
-        fi
+        BUILD_ARGS+=("-f" "$CONTAINERFILE")
+        echo "Using custom Containerfile: $CONTAINERFILE"
     fi
 
     # 4. Execute the build
